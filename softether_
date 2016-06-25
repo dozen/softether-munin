@@ -1,0 +1,154 @@
+#!/usr/bin/perl -w
+use strict;
+use warnings;
+use Munin::Plugin::Framework;
+use Munin::Plugin;
+
+unless (defined $ENV{host}) {
+  $ENV{host} = "localhost";
+}
+
+unless (defined $ENV{password}) {
+  die("Please set password");
+}
+
+unless (defined $ENV{vpncmdpath}) {
+  $ENV{vpncmdpath} = "/usr/local/vpnserver/vpncmd";
+}
+
+my $hub;
+
+if ($0 =~ /softether_([\w\d#-_.&]+)$/) {
+  $hub = $1;
+} else {
+  die ("Can't run config without a symlinked name");
+}
+
+my $result = `$ENV{vpncmdpath} $ENV{host} /SERVER /password:$ENV{password} /hub:$hub /cmd StatusGet`;
+
+my @item_key = (
+"Outgoing Unicast Packets",
+"Outgoing Unicast Total Size",
+"Outgoing Broadcast Packets",
+"Outgoing Broadcast Total Size",
+"Incoming Unicast Packets",
+"Incoming Unicast Total Size",
+"Incoming Broadcast Packets",
+"Incoming Broadcast Total Size",
+);
+
+my $category = "softether";
+
+my %data;
+
+sub get_value {
+  my $tmp;
+  my $key = shift;
+  #Outgoing Multicast Packets
+  if ($result =~ /$key\s*\|([0-9,]+)/) {
+    $tmp = $1;
+    $tmp =~ s/,//g;
+    return $tmp;
+  }
+}
+
+for my $item (@item_key) {
+  $data{$item} = get_value($item);
+}
+
+my $plugin = Munin::Plugin::Framework->new;
+
+$plugin->add_graphs(
+  packets => {
+    args => "",
+    category => $category,
+    info => "$hub Packets",
+    title => "$hub Packets",
+    vlabel => "in (-) | out (+) packets / second",
+    fields => {
+      unicast_out => {
+        label => "Unicast",
+        type => "DERIVE",
+        min => 0,
+	negative => "unicast_in",
+        value => $data{"Outgoing Unicast Packets"}
+      },
+      unicast_in => {
+        label => "Unicast Incoming",
+        type => "DERIVE",
+	graph => "no",
+        min => 0,
+        value => $data{"Incoming Unicast Packets"}
+      }
+    }
+  },
+  traffic => {
+    args => "",
+    category => $category,
+    info => "$hub Traffic",
+    title => "$hub Traffic",
+    vlabel => "in (-) | out (+) bytes/sercond",
+    fields => {
+      unicast_out => {
+        label => "Unicast",
+        type => "DERIVE",
+        min => 0,
+	negative => "unicast_in",
+        value => $data{"Outgoing Unicast Total Size"}
+      },
+      unicast_in => {
+        label => "Incoming",
+        type => "DERIVE",
+        min => 0,
+	graph => "no",
+        value => $data{"Incoming Unicast Total Size"}
+      }
+    }
+  },
+  unicast_total_packets => {
+    args => "",
+    category => $category,
+    info => "$hub Unicast Toatl Packets",
+    title => "$hub Unicast Total Packets",
+    vlabel => "packets",
+    fields => {
+      incoming => {
+        label => "Incoming",
+        type => "GAUGE",
+        min => 0,
+        value => $data{"Incoming Unicast Packets"}
+      },
+      outgoing => {
+        label => "Outgoing",
+        type => "GAUGE",
+        draw => "AREA",
+        min => 0,
+        value => $data{"Outgoing Unicast Packets"}
+      }
+    }
+  },
+  unicast_total_traffic => {
+    args => "",
+    category => $category,
+    info => "$hub Unicast Total Traffic",
+    title => "$hub Unicast Total Traffic",
+    vlabel => "bytes",
+    fields => {
+      incoming => {
+        label => "Incoming",
+        type => "GAUGE",
+        min => 0,
+        value => $data{"Incoming Unicast Total Size"}
+      },
+      outgoing => {
+        label => "Outgoing",
+        type => "GAUGE",
+        draw => "AREA",
+        min => 0,
+        value => $data{"Outgoing Unicast Total Size"}
+      }
+    }
+  }
+);
+
+$plugin->run;
