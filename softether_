@@ -74,7 +74,6 @@ $plugin->add_graphs(
         value => $data{"Outgoing Unicast Packets"}
       },
       unicast_in => {
-        label => "Unicast Incoming",
         type => "DERIVE",
 	graph => "no",
         min => 0,
@@ -97,7 +96,6 @@ $plugin->add_graphs(
         value => $data{"Outgoing Unicast Total Size"}
       },
       unicast_in => {
-        label => "Incoming",
         type => "DERIVE",
         min => 0,
 	graph => "no",
