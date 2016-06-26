@@ -7,7 +7,6 @@ environment:
 ```
 Host: localhost
 vpncmd path: /usr/local/vpnserver/vpncmd
-Host: localhost
 Hub name: defaultHub
 Hub password: softetherpassword
 ```
@@ -29,8 +28,8 @@ env.password softetherpassword
 environment:
 
 ```
-vpncmd path: /opt/vpnserver/vpncmd
 Host: 192.168.10.5
+vpncmd path: /opt/vpnserver/vpncmd
 Hub password: softetherpassword
 ```
 
