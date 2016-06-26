@@ -65,6 +65,12 @@ $plugin->add_graphs(
     title => "$hub Packets",
     vlabel => "in (-) | out (+) packets / second",
     fields => {
+      unicast_in => {
+        type => "DERIVE",
+	graph => "no",
+        min => 0,
+        value => $data{"Incoming Unicast Packets"}
+      },
       unicast_out => {
         label => "Unicast",
         type => "DERIVE",
@@ -72,12 +78,6 @@ $plugin->add_graphs(
 	negative => "unicast_in",
         value => $data{"Outgoing Unicast Packets"}
       },
-      unicast_in => {
-        type => "DERIVE",
-	graph => "no",
-        min => 0,
-        value => $data{"Incoming Unicast Packets"}
-      }
     }
   },
   traffic => {
@@ -87,18 +87,18 @@ $plugin->add_graphs(
     title => "$hub Traffic",
     vlabel => "in (-) | out (+) bytes/sercond",
     fields => {
+      unicast_in => {
+        type => "DERIVE",
+        min => 0,
+	graph => "no",
+        value => $data{"Incoming Unicast Total Size"}
+      },
       unicast_out => {
         label => "Unicast",
         type => "DERIVE",
         min => 0,
 	negative => "unicast_in",
         value => $data{"Outgoing Unicast Total Size"}
-      },
-      unicast_in => {
-        type => "DERIVE",
-        min => 0,
-	graph => "no",
-        value => $data{"Incoming Unicast Total Size"}
       }
     }
   },
