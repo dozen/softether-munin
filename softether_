@@ -44,7 +44,6 @@ my %data;
 sub get_value {
   my $tmp;
   my $key = shift;
-  #Outgoing Multicast Packets
   if ($result =~ /$key\s*\|([0-9,]+)/) {
     $tmp = $1;
     $tmp =~ s/,//g;
